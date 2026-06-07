@@ -90,6 +90,18 @@ For maximum accuracy in a real-world waste management scenario, it is recommende
 4. Test thoroughly
 5. Submit a pull request
 
+# EcoVision AI - Garbage Detection and Classification System
+
+## Live Demo
+
+🚀 Try the application here:
+
+https://ecovision-ai-ibfn.onrender.com/
+
+Or:
+
+[Live Demo](https://ecovision-ai-ibfn.onrender.com/)
+
 ## 📄 License
 This project is open-source and available under the MIT License.
 
