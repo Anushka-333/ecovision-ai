@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+.venv/
+venv/
+env/
+ENV/
+
+# YOLO weights / Model files
+*.pt
+model/*.pt
+
+# Uploads and temporary processing folders
+uploads/*
+!uploads/.gitkeep
+static/processed_*
+
+# Environment variables
+.env
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo

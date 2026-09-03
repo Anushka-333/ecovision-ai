@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis Result - EcoVision AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --accent-green: #10b981;
+            --accent-blue: #3b82f6;
+            --accent-red: #ef4444;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 2rem 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top center, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 950px;
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: white;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            margin-bottom: 2rem;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .overall-badge {
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: 800;
+            font-size: 1.5rem;
+            margin-top: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Eco Impact Counter Grid */
+        .eco-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .eco-card {
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 16px;
+            padding: 1.2rem;
+            text-align: center;
+        }
+
+        .eco-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--accent-green);
+        }
+
+        .eco-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        .layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        @media (min-width: 768px) {
+            .layout-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .image-container img {
+            width: 100%;
+            border-radius: 16px;
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .detections-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .detection-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-left-width: 4px;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .detection-item.wet { border-left-color: var(--accent-green); }
+        .detection-item.dry { border-left-color: var(--accent-blue); }
+        .detection-item.hazardous { border-left-color: var(--accent-red); }
+        .detection-item.unknown { border-left-color: #94a3b8; }
+
+        .detection-name {
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+            text-transform: capitalize;
+        }
+
+        .detection-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .confidence-badge {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+
+        .btn-guide {
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--accent-blue);
+            padding: 0.3rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 0.5rem;
+            display: inline-block;
+        }
+
+        .btn-guide:hover {
+            background: rgba(59, 130, 246, 0.3);
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-green), #059669);
+            box-shadow: 0 4px 15px -5px var(--accent-green);
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Voice status indicator */
+        .voice-status {
+            font-size: 0.85rem;
+            color: var(--accent-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            opacity: 0;
+            transition: opacity 0.5s;
+        }
+        .voice-icon {
+            display: inline-block;
+            width: 10px; height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: pulse 1.5s infinite;
+        }
+
+        /* Modal styling */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: #1e293b;
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 1rem; right: 1.5rem;
+            font-size: 1.5rem;
+            color: var(--text-muted);
+            cursor: pointer;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Analysis Results</h1>
+        
+        <div class="glass-card" id="pdf-report-area">
+            <div class="result-header">
+                <h3 style="margin: 0; color: var(--text-muted); font-weight: 400;">Overall Classification</h3>
+                <div class="overall-badge" id="overall-text">{{ overall }}</div>
+                
+                <div class="voice-status" id="voice-status">
+                    <span class="voice-icon"></span> <span id="voice-label">Playing voice feedback...</span>
+                </div>
+
+                <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; align-items: center; flex-wrap: wrap;">
+                    <select id="lang-select" class="btn btn-outline" style="padding: 0.4rem 1rem; font-size: 0.85rem;">
+                        <option value="en">🇬🇧 Voice: English</option>
+                        <option value="hi">🇮🇳 Voice: Hindi (हिन्दी)</option>
+                    </select>
+
+                    <button id="btn-replay-voice" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.4rem 1rem;">
+                        🔊 Replay Voice Announcement
+                    </button>
+                    
+                    <button id="btn-download-pdf" class="btn btn-outline" style="font-size: 0.85rem; padding: 0.4rem 1rem; border-color: var(--accent-green); color: var(--accent-green);">
+                        📄 Download PDF Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- Eco-Impact Carbon Savings Counter -->
+            {% if eco_impact %}
+            <div class="eco-grid">
+                <div class="eco-card">
+                    <div class="eco-value">{{ eco_impact.co2_saved_kg }} <span style="font-size:1rem;">kg</span></div>
+                    <div class="eco-label">🌱 CO₂ Emission Saved</div>
+                </div>
+                <div class="eco-card">
+                    <div class="eco-value">{{ eco_impact.energy_kwh }} <span style="font-size:1rem;">kWh</span></div>
+                    <div class="eco-label">⚡ Energy Conserved</div>
+                </div>
+                <div class="eco-card">
+                    <div class="eco-value">{{ eco_impact.recyclable_count }}</div>
+                    <div class="eco-label">♻️ Recyclable Items</div>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="layout-grid">
+                <div class="image-container">
+                    <img src="{{ image_url }}" id="processed-img" alt="Detection Results">
+                </div>
+                
+                <div class="detections-container">
+                    <h3 style="margin-top:0; margin-bottom: 1.5rem;">Detected Objects</h3>
+                    
+                    {% if detections %}
+                        <ul class="detections-list">
+                            {% for detection in detections %}
+                            <li class="detection-item {{ 'wet' if detection.category == 'wet' else 'dry' if detection.category == 'dry' else 'hazardous' if detection.category == 'hazardous' else 'unknown' }}">
+                                <div>
+                                    <div class="detection-name">{{ detection.class_name }}</div>
+                                    <div class="detection-meta">Category: <span style="color: {{ '#10b981' if detection.category == 'wet' else '#3b82f6' if detection.category == 'dry' else '#ef4444' if detection.category == 'hazardous' else '#94a3b8' }}">{{ detection.category }}</span></div>
+                                    {% if detection.guide %}
+                                    <button class="btn-guide" onclick="showDisposalModal('{{ detection.class_name }}', '{{ detection.guide.bin_name }}', '{{ detection.guide.bin_color }}', '{{ detection.guide.instructions }}', '{{ detection.guide.icon }}')">
+                                        💡 Disposal Guide
+                                    </button>
+                                    {% endif %}
+                                </div>
+                                <div class="confidence-badge">
+                                    {{ "%.0f"|format(detection.confidence * 100) }}%
+                                </div>
+                            </li>
+                            {% endfor %}
+                        </ul>
+                    {% else %}
+                        <div class="no-detections">
+                            <h4 style="margin:0 0 0.5rem 0;">No objects detected</h4>
+                            <p style="margin:0; font-size: 0.9rem; opacity: 0.9;">The model couldn't confidently identify any specific waste items in this image. Try uploading a clearer image.</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <a href="/upload" class="btn btn-primary">Upload Another</a>
+            <a href="/video" class="btn btn-outline">Try Webcam</a>
+            <a href="/" class="btn btn-outline">Home</a>
+        </div>
+    </div>
+
+    <!-- Disposal Guide Modal -->
+    <div class="modal-overlay" id="guideModal">
+        <div class="modal-content">
+            <span class="modal-close" onclick="closeDisposalModal()">&times;</span>
+            <div style="font-size: 2.5rem; text-align: center; margin-bottom: 0.5rem;" id="modal-icon">🗑️</div>
+            <h2 style="margin:0 0 1rem 0; text-align: center;" id="modal-title">Disposal Guide</h2>
+            
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <span id="modal-bin" style="display: inline-block; padding: 0.5rem 1.2rem; border-radius: 9999px; font-weight: 700; color: white;">Green Bin</span>
+            </div>
+
+            <p style="color: var(--text-muted); line-height: 1.6; text-align: center;" id="modal-instructions">
+                Loading instructions...
+            </p>
+        </div>
+    </div>
+
+    <script>
+        const overallText = document.getElementById('overall-text').innerText;
+        const voiceStatus = document.getElementById('voice-status');
+        const voiceLabel = document.getElementById('voice-label');
+        const replayBtn = document.getElementById('btn-replay-voice');
+        const langSelect = document.getElementById('lang-select');
+        const pdfBtn = document.getElementById('btn-download-pdf');
+
+        // Hindi and English Speech Prompts Mapping
+        function getSpeechText(lang, statusText) {
+            if (lang === 'hi') {
+                if (statusText.includes('Wet')) {
+                    return "Kachray ka parinaam hai: Gila Kachra! Kripya Haray Dustbin me dalein.";
+                } else if (statusText.includes('Dry')) {
+                    return "Kachray ka parinaam hai: Sookha Kachra! Kripya Neelay Dustbin me dalein.";
+                } else if (statusText.includes('Hazardous')) {
+                    return "Chetaavni: Khatarnaak kachra detect hua hai! Saavdhani se sambhalein.";
+                } else {
+                    return "Kachray ki pehchan nahi ho paayi.";
+                }
+            } else {
+                return "Classification result is: " + statusText;
+            }
+        }
+
+        function speakResult() {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const selectedLang = langSelect.value;
+                const textToSpeak = getSpeechText(selectedLang, overallText);
+                
+                const utterance = new SpeechSynthesisUtterance(textToSpeak);
+                utterance.lang = selectedLang === 'hi' ? 'hi-IN' : 'en-US';
+                utterance.rate = 0.95;
+
+                utterance.onstart = () => {
+                    voiceStatus.style.opacity = '1';
+                    voiceLabel.textContent = selectedLang === 'hi' ? 'बोल रहा है (Speaking)...' : 'Speaking classification result...';
+                };
+                
+                utterance.onend = () => voiceStatus.style.opacity = '0';
+                utterance.onerror = () => voiceStatus.style.opacity = '0';
+                
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        // Auto-speak on load
+        setTimeout(speakResult, 600);
+
+        if (replayBtn) replayBtn.addEventListener('click', speakResult);
+        if (langSelect) langSelect.addEventListener('change', speakResult);
+
+        // PDF Export Handler
+        if (pdfBtn) {
+            pdfBtn.addEventListener('click', () => {
+                const element = document.getElementById('pdf-report-area');
+                const opt = {
+                    margin:       0.5,
+                    filename:     'EcoVision_Waste_Analysis_Report.pdf',
+                    image:        { type: 'jpeg', quality: 0.98 },
+                    html2canvas:  { scale: 2, useCORS: true },
+                    jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+                };
+                html2pdf().set(opt).from(element).save();
+            });
+        }
+
+        // Disposal Modal Logic
+        function showDisposalModal(itemName, binName, binColor, instructions, icon) {
+            document.getElementById('modal-icon').textContent = icon;
+            document.getElementById('modal-title').textContent = itemName.toUpperCase() + ' Disposal Guide';
+            const binBadge = document.getElementById('modal-bin');
+            binBadge.textContent = binName;
+            binBadge.style.backgroundColor = binColor;
+            document.getElementById('modal-instructions').textContent = instructions;
+            document.getElementById('guideModal').style.display = 'flex';
+        }
+
+        function closeDisposalModal() {
+            document.getElementById('guideModal').style.display = 'none';
+        }
+
+        // Save scan to LocalStorage History
+        try {
+            const scanEntry = {
+                timestamp: new Date().toLocaleString(),
+                overall: overallText,
+                imageUrl: document.getElementById('processed-img').src
+            };
+            let history = JSON.parse(localStorage.getItem('ecoScanHistory') || '[]');
+            history.unshift(scanEntry);
+            if (history.length > 10) history = history.slice(0, 10);
+            localStorage.setItem('ecoScanHistory', JSON.stringify(history));
+        } catch(e) {
+            console.log("Local storage scan history error:", e);
+        }
+    </script>
+</body>
+</html>

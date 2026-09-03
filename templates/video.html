@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Video - EcoVision AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: rgba(30, 41, 59, 0.7);
+            --text-main: #f8fafc;
+            --text-muted: #cbd5e1;
+            --accent-blue: #3b82f6;
+            --accent-green: #10b981;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            margin: 0;
+            padding: 2rem 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at top left, rgba(59, 130, 246, 0.1) 0%, transparent 40%);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 90%;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: white;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        .glass-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 2rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: fadeInUp 0.8s ease-out 0.2s both;
+            margin-bottom: 2rem;
+        }
+
+        .stream-container {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: #000;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+            aspect-ratio: 4/3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .stream-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .live-badge {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            padding: 0.4rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: #ef4444;
+            border-radius: 50%;
+            animation: blink 1.5s infinite;
+        }
+
+        .legend {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            font-weight: 600;
+            border-radius: 9999px;
+            text-decoration: none;
+            color: white;
+            transition: all 0.3s;
+            border: 1px solid transparent;
+        }
+
+        .btn-outline {
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-outline:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Live Analysis</h1>
+        
+        <div class="glass-card">
+            <div class="stream-container">
+                <div class="live-badge">
+                    <span class="live-dot"></span> LIVE STREAM
+                </div>
+                <img src="{{ url_for('video_feed') }}" alt="Real-time webcam stream">
+            </div>
+
+            <div style="margin-top: 1.5rem; border-top: 1px solid var(--glass-border); padding-top: 1rem;">
+                <div style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Live Detected Status</div>
+                <div id="live-overall-badge" style="display: inline-block; padding: 0.4rem 1.2rem; border-radius: 9999px; font-weight: 700; font-size: 1.2rem; margin-top: 0.5rem; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2);">
+                    Initializing webcam...
+                </div>
+            </div>
+            
+            <div class="legend">
+                <div class="legend-item"><div class="legend-color" style="background: #10b981;"></div> Wet (Organic)</div>
+                <div class="legend-item"><div class="legend-color" style="background: #3b82f6;"></div> Dry (Recyclable)</div>
+                <div class="legend-item"><div class="legend-color" style="background: #ef4444;"></div> Hazardous</div>
+            </div>
+        </div>
+
+        <div class="actions">
+            <select id="video-lang-select" class="btn btn-outline" style="cursor: pointer; padding: 0.8rem 1.5rem;">
+                <option value="en">🇬🇧 Voice: English</option>
+                <option value="hi">🇮🇳 Voice: Hindi (हिन्दी)</option>
+            </select>
+            <button id="btn-toggle-voice" class="btn btn-outline" style="cursor: pointer;">
+                🔊 Voice Feedback: ON
+            </button>
+            <a href="/upload" class="btn btn-outline">Switch to Upload</a>
+            <a href="/" class="btn btn-outline">Home</a>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const overallBadge = document.getElementById('live-overall-badge');
+            const toggleVoiceBtn = document.getElementById('btn-toggle-voice');
+            const videoLangSelect = document.getElementById('video-lang-select');
+            
+            let voiceEnabled = true;
+            let lastAnnouncedCategory = '';
+            let lastAnnounceTime = 0;
+
+            toggleVoiceBtn.addEventListener('click', () => {
+                voiceEnabled = !voiceEnabled;
+                toggleVoiceBtn.textContent = voiceEnabled ? '🔊 Voice Feedback: ON' : '🔇 Voice Feedback: OFF';
+            });
+
+            function announceCategory(categoryType) {
+                if (!voiceEnabled || !('speechSynthesis' in window)) return;
+                const now = Date.now();
+                if (categoryType === lastAnnouncedCategory && (now - lastAnnounceTime < 4000)) return;
+                
+                window.speechSynthesis.cancel();
+                const lang = videoLangSelect.value;
+                let text = "";
+
+                if (lang === 'hi') {
+                    if (categoryType === 'wet') text = "Gila kachra detect hua!";
+                    else if (categoryType === 'dry') text = "Sookha kachra detect hua!";
+                    else if (categoryType === 'hazardous') text = "Khatarnaak kachra warning!";
+                } else {
+                    if (categoryType === 'wet') text = "Wet waste detected";
+                    else if (categoryType === 'dry') text = "Dry waste detected";
+                    else if (categoryType === 'hazardous') text = "Hazardous waste warning";
+                }
+
+                if (!text) return;
+
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = lang === 'hi' ? 'hi-IN' : 'en-US';
+                utterance.rate = 1.0;
+                lastAnnouncedCategory = categoryType;
+                lastAnnounceTime = now;
+                window.speechSynthesis.speak(utterance);
+            }
+
+            // Poll live detection status every 800ms
+            setInterval(async () => {
+                try {
+                    const response = await fetch('/api/live_status');
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data && data.overall) {
+                            overallBadge.textContent = data.overall;
+                            
+                            // Style badge based on status
+                            if (data.overall.includes('Wet')) {
+                                overallBadge.style.borderColor = '#10b981';
+                                overallBadge.style.color = '#10b981';
+                                announceCategory('wet');
+                            } else if (data.overall.includes('Dry')) {
+                                overallBadge.style.borderColor = '#3b82f6';
+                                overallBadge.style.color = '#3b82f6';
+                                announceCategory('dry');
+                            } else if (data.overall.includes('Hazardous')) {
+                                overallBadge.style.borderColor = '#ef4444';
+                                overallBadge.style.color = '#ef4444';
+                                announceCategory('hazardous');
+                            } else {
+                                overallBadge.style.borderColor = 'rgba(255,255,255,0.2)';
+                                overallBadge.style.color = 'var(--text-main)';
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.log("Live status fetch polling error:", e);
+                }
+            }, 800);
+        });
+    </script>
+</body>
+</html>
